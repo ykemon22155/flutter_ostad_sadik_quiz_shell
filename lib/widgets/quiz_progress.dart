@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_shell/widgets/quiz_timer.dart';
 
 class QuizProgress extends StatelessWidget {
-  const QuizProgress({super.key});
+  const QuizProgress({super.key, required this.currentProgress, required this.totalCount});
+  final int currentProgress;
+  final int totalCount;
 
   @override
   Widget build(BuildContext context) {
@@ -18,24 +21,18 @@ class QuizProgress extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      "6",
+                      currentProgress.toString(),
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.pinkAccent),
                     ),
-                    Text("/20", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                    Text("/$totalCount", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ],
             ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(width: 56, height: 56, child: CircularProgressIndicator(value: 0.5, backgroundColor: Color(0xffe1deee))),
-                Text("00:25"),
-              ],
-            ),
+            QuizTimer()
           ],
         ),
-        LinearProgressIndicator(value: 6 / 20),
+        LinearProgressIndicator(value: currentProgress/totalCount),
       ],
     );
   }
