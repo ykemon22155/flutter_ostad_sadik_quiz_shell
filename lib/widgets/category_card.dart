@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../views/quiz_page.dart';
+
 class CategoryCard extends StatelessWidget {
   const CategoryCard({super.key, required this.title, required this.imageFileName});
+
   final String title;
   final String imageFileName;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => print("Tapped $title"),
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage(category: title))),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(color: Color(0xfffeeafe), borderRadius: BorderRadius.circular(12)),

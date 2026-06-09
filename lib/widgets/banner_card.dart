@@ -26,7 +26,7 @@ class BannerCard extends StatelessWidget {
           ),
           SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage())),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage(category: "Math"))),
             style: ButtonStyle(
               shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10))),
               padding: MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),

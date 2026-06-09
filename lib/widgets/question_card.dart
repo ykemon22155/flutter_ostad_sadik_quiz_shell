@@ -8,6 +8,7 @@ class QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.maxFinite,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Color(0xfffbddf7),

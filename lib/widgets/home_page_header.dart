@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class HomePageHeader extends StatelessWidget {
-  const HomePageHeader({super.key, required this.userName, required this.userImageUrl});
+  const HomePageHeader({super.key, required this.userName, required this.userImageUrl, this.totalScore});
 
   final String userName;
   final String userImageUrl;
+  final int? totalScore;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class HomePageHeader extends StatelessWidget {
             children: [
               CircleAvatar(radius: 16, backgroundColor: Color(0xfff4e2fa), foregroundColor: Colors.pinkAccent, child: Icon(Icons.diamond_outlined, size: 20)),
               Text(
-                "200",
+                totalScore == null ? "..." : totalScore.toString(),
                 style: TextStyle(color: Color(0xff220c87), fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
