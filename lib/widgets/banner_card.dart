@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quiz_shell/views/quiz_page.dart';
+import 'package:quiz_shell/views/quiz_categories.dart';
 
 class BannerCard extends StatelessWidget {
   const BannerCard({super.key});
@@ -26,10 +26,10 @@ class BannerCard extends StatelessWidget {
           ),
           SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage(category: "Math"))),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizCategories())),
             style: ButtonStyle(
-              shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10))),
-              padding: MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
+              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10))),
+              padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

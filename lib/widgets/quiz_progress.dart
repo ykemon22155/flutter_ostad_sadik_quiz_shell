@@ -3,6 +3,7 @@ import 'package:quiz_shell/widgets/quiz_timer.dart';
 
 class QuizProgress extends StatelessWidget {
   const QuizProgress({super.key, required this.currentProgress, required this.totalCount});
+
   final int currentProgress;
   final int totalCount;
 
@@ -32,7 +33,7 @@ class QuizProgress extends StatelessWidget {
             QuizTimer(key: ValueKey(currentProgress)),
           ],
         ),
-        LinearProgressIndicator(value: currentProgress/totalCount),
+        LinearProgressIndicator(value: currentProgress / totalCount),
       ],
     );
   }

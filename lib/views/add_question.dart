@@ -79,25 +79,25 @@ class _AddQuestionState extends State<AddQuestion> {
           ),
           SizedBox(height: 16),
           TitleSection(label: "Correct Answer", showSeeAll: false),
-          Row(
-            children: [
-              Expanded(
-                child: RadioListTile<int?>(dense: true, value: 0, title: Text("A"), groupValue: currentAnswerIndex, onChanged: (value) => setState(() => currentAnswerIndex = value)),
-              ),
-              Expanded(
-                child: RadioListTile<int?>(dense: true, value: 1, title: Text("B"), groupValue: currentAnswerIndex, onChanged: (value) => setState(() => currentAnswerIndex = value)),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: RadioListTile<int?>(dense: true, value: 2, title: Text("C"), groupValue: currentAnswerIndex, onChanged: (value) => setState(() => currentAnswerIndex = value)),
-              ),
-              Expanded(
-                child: RadioListTile<int?>(dense: true, value: 3, title: Text("D"), groupValue: currentAnswerIndex, onChanged: (value) => setState(() => currentAnswerIndex = value)),
-              ),
-            ],
+          RadioGroup<int?>(
+            groupValue: currentAnswerIndex,
+            onChanged: (value) => setState(() => currentAnswerIndex = value),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: RadioListTile<int?>(dense: true, value: 0, title: Text("A"))),
+                    Expanded(child: RadioListTile<int?>(dense: true, value: 1, title: Text("B"))),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(child: RadioListTile<int?>(dense: true, value: 2, title: Text("C"))),
+                    Expanded(child: RadioListTile<int?>(dense: true, value: 3, title: Text("D"))),
+                  ],
+                ),
+              ],
+            ),
           ),
           SizedBox(height: 16),
           MyTextField(controller: markController, label: "Total Mark", showNumberKeyboardOnly: true),

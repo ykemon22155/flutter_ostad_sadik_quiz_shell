@@ -9,6 +9,7 @@ import 'package:quiz_shell/widgets/answer_option.dart';
 import 'package:quiz_shell/widgets/question_card.dart';
 import 'package:quiz_shell/widgets/quiz_progress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../service/hive_database.dart';
 
 class QuizPage extends StatefulWidget {
@@ -108,22 +109,19 @@ class _QuizPageState extends State<QuizPage> {
               ),
             )
           : progress == questions.length
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 24,
-                    children: [
-                      Icon(Icons.emoji_events_outlined, size: 120, color: Colors.orange),
-                      Text("Quiz Completed!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                      Text("Your Score: $obtainedMark", style: TextStyle(fontSize: 18)),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text("Back to Home"),
-                      ),
-                    ],
-                  ),
-                )
-              : Padding(
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 24,
+                children: [
+                  Icon(Icons.emoji_events_outlined, size: 120, color: Colors.orange),
+                  Text("Quiz Completed!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text("Your Score: $obtainedMark", style: TextStyle(fontSize: 18)),
+                  ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("Back to Home")),
+                ],
+              ),
+            )
+          : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 spacing: 32,
@@ -154,9 +152,9 @@ class _QuizPageState extends State<QuizPage> {
                     child: ElevatedButton(
                       onPressed: answerSubmitted ? prepareNextQuestion : submitAnswer,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStatePropertyAll(Color(0xff2200a6)),
-                        fixedSize: MaterialStatePropertyAll(Size(double.maxFinite, 56)),
-                        shape: MaterialStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                        backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
+                        fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
                       ),
                       child: Text(
                         answerSubmitted ? "Next" : "Submit",

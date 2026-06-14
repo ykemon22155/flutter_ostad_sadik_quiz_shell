@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../views/quiz_categories.dart';
+
 class TitleSection extends StatelessWidget {
   const TitleSection({super.key, required this.label, this.showSeeAll = true});
 
@@ -14,7 +16,7 @@ class TitleSection extends StatelessWidget {
         Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         if (showSeeAll)
           InkWell(
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizCategories())),
             child: Text(
               "See All",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xff230a94)),

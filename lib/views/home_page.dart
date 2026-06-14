@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              SizedBox(height: 32),
+              SizedBox(height: 20),
               TitleSection(label: "Recent", showSeeAll: false),
               SizedBox(height: 16),
               RecentCard(title: "Biology", questionCount: 12, isComplete: true),

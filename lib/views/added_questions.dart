@@ -45,10 +45,10 @@ class _AddedQuestionsState extends State<AddedQuestions> {
       body: allQuestions.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        itemCount: allQuestions.length,
-        itemBuilder: (context, index) => QuestionPreview(question: allQuestions[index], index: index),
-      ),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              itemCount: allQuestions.length,
+              itemBuilder: (context, index) => QuestionPreview(question: allQuestions[index], index: index),
+            ),
     );
   }
 }

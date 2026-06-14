@@ -13,10 +13,10 @@ class MyTextField extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: controller,
-        keyboardType: showNumberKeyboardOnly ? TextInputType.number :TextInputType.text,
+        keyboardType: showNumberKeyboardOnly ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           label: Text(label),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
