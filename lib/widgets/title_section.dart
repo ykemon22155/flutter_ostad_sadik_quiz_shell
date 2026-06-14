@@ -14,7 +14,7 @@ class TitleSection extends StatelessWidget {
         Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         if (showSeeAll)
           InkWell(
-            onTap: () => print("User tapped See All $label Button"),
+            onTap: () {},
             child: Text(
               "See All",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xff230a94)),

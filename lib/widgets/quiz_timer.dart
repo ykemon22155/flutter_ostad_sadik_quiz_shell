@@ -8,16 +8,19 @@ class QuizTimer extends StatefulWidget {
 }
 
 class _QuizTimerState extends State<QuizTimer> {
-  int remainingSecond = 30;
+  int totalSeconds = 60;
+  late int remainingSecond;
 
   @override
   void initState() {
     super.initState();
+    remainingSecond = totalSeconds;
     startTimer();
   }
 
-  startTimer() async {
+  void startTimer() async {
     await Future.delayed(Duration(seconds: 1));
+    if (!mounted) return;
     setState(() => remainingSecond--);
     if (remainingSecond > 0) startTimer();
   }
@@ -30,9 +33,16 @@ class _QuizTimerState extends State<QuizTimer> {
         SizedBox(
           width: 56,
           height: 56,
-          child: CircularProgressIndicator(value: remainingSecond / 30, backgroundColor: Color(0xffe1deee), color: remainingSecond < 10 ? Colors.red : Color(0xff2200a5)),
+          child: CircularProgressIndicator(
+            value: remainingSecond / totalSeconds,
+            backgroundColor: const Color(0xffe1deee),
+            color: remainingSecond < 10 ? Colors.red : const Color(0xff2200a5),
+          ),
         ),
-        Text("00:${remainingSecond < 10 ? '0' : ''}$remainingSecond", style: TextStyle(color: remainingSecond < 10 ? Colors.red : Colors.black)),
+        Text(
+          "00:${remainingSecond < 10 ? '0' : ''}$remainingSecond",
+          style: TextStyle(color: remainingSecond < 10 ? Colors.red : Colors.black, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_shell/views/add_question.dart';
+import 'package:quiz_shell/views/added_questions.dart';
 import 'package:quiz_shell/widgets/banner_card.dart';
 import 'package:quiz_shell/widgets/category_card.dart';
 import 'package:quiz_shell/widgets/home_page_header.dart';
@@ -14,8 +16,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String userImageUrl = "https://i0.wp.com/sadik.work/wp-content/uploads/2020/05/Shared-from-Lightroom-mobile-2.jpg";
-  String userName = "S.a. Sadik";
   int? totalScore;
 
   @override
@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
             padding: EdgeInsets.all(16),
             children: [
-              HomePageHeader(userName: userName, userImageUrl: userImageUrl, totalScore: totalScore),
+              HomePageHeader(totalScore: totalScore),
               SizedBox(height: 16),
               BannerCard(),
               SizedBox(height: 16),
@@ -51,6 +51,7 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   spacing: 16,
                   children: [
+                    CategoryCard(title: "Local", imageFileName: "computer.png", loadFromLocalDatabase: true),
                     CategoryCard(title: "Math", imageFileName: "math.png"),
                     CategoryCard(title: "Chemistry", imageFileName: "chemistry.png"),
                     CategoryCard(title: "Computer", imageFileName: "computer.png"),
@@ -59,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 32),
               TitleSection(label: "Recent", showSeeAll: false),
               SizedBox(height: 16),
               RecentCard(title: "Biology", questionCount: 12, isComplete: true),
@@ -67,6 +68,26 @@ class _HomePageState extends State<HomePage> {
               RecentCard(title: "English", questionCount: 96, isComplete: false),
               SizedBox(height: 16),
               RecentCard(title: "Computer", questionCount: 19, isComplete: true),
+              SizedBox(height: 32),
+              TitleSection(label: "Quiz from Local Storage", showSeeAll: false),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddQuestion())),
+                      child: Text("Add Question"),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddedQuestions())),
+                      child: Text("View Questions"),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -9,11 +9,13 @@ import 'package:quiz_shell/widgets/answer_option.dart';
 import 'package:quiz_shell/widgets/question_card.dart';
 import 'package:quiz_shell/widgets/quiz_progress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../service/hive_database.dart';
 
 class QuizPage extends StatefulWidget {
-  const QuizPage({super.key, required this.category});
+  const QuizPage({super.key, required this.category, this.loadFromLocalDatabase = false});
 
   final String category;
+  final bool loadFromLocalDatabase;
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -55,15 +57,18 @@ class _QuizPageState extends State<QuizPage> {
     selectedAnswerIndex = null;
     if (progress < questions.length) progress++;
     setState(() {});
-    if (!(progress < questions.length)) print("All Question Answered");
   }
 
   void loadAllQuestionsOfThisCategory() {
     List<QuizQuestion> allQuestionsOfThisCategory = [];
-    if (widget.category == "Math") allQuestionsOfThisCategory = mathQuestions;
-    if (widget.category == "Chemistry") allQuestionsOfThisCategory = chemistryQuestions;
-    if (widget.category == "Biology") allQuestionsOfThisCategory = biologyQuestions;
-    if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
+    if (widget.loadFromLocalDatabase) {
+      allQuestionsOfThisCategory = HiveDatabase.myQuestions.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e))).toList();
+    } else {
+      if (widget.category == "Math") allQuestionsOfThisCategory = mathQuestions;
+      if (widget.category == "Chemistry") allQuestionsOfThisCategory = chemistryQuestions;
+      if (widget.category == "Biology") allQuestionsOfThisCategory = biologyQuestions;
+      if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
+    }
     setState(() => questions = List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle());
   }
 
@@ -102,7 +107,23 @@ class _QuizPageState extends State<QuizPage> {
                 ],
               ),
             )
-          : Padding(
+          : progress == questions.length
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 24,
+                    children: [
+                      Icon(Icons.emoji_events_outlined, size: 120, color: Colors.orange),
+                      Text("Quiz Completed!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      Text("Your Score: $obtainedMark", style: TextStyle(fontSize: 18)),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text("Back to Home"),
+                      ),
+                    ],
+                  ),
+                )
+              : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 spacing: 32,

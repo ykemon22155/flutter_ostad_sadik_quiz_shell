@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_shell/service/user_data.dart';
 
 class HomePageHeader extends StatelessWidget {
-  const HomePageHeader({super.key, required this.userName, required this.userImageUrl, this.totalScore});
+  const HomePageHeader({super.key, this.totalScore});
 
-  final String userName;
-  final String userImageUrl;
   final int? totalScore;
 
   @override
@@ -19,7 +18,7 @@ class HomePageHeader extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.pinkAccent, width: 2),
             shape: BoxShape.circle,
-            image: DecorationImage(image: NetworkImage(userImageUrl)),
+            image: DecorationImage(image: NetworkImage(UserData.userImageUrl)),
           ),
         ),
         //Name, Greeting
@@ -27,7 +26,7 @@ class HomePageHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Hi, $userName", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+              Text("Hi, ${UserData.userName}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
               Text(
                 "Ready to play",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade600),

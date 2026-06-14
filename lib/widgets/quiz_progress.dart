@@ -29,7 +29,7 @@ class QuizProgress extends StatelessWidget {
                 ),
               ],
             ),
-            QuizTimer()
+            QuizTimer(key: ValueKey(currentProgress)),
           ],
         ),
         LinearProgressIndicator(value: currentProgress/totalCount),
