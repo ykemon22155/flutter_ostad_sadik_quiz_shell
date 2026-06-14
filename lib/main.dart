@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_shell/service/hive_database.dart';
 
 import 'views/home_page.dart';
 
-void main() {
+Future<void> main() async{
+  await HiveDatabase.initialize();
   runApp(const MyApp());
 }
 
