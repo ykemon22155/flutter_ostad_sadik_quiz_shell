@@ -1,19 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:quiz_shell/utils/numeric_serial_to_abc.dart';
 import 'package:quiz_shell/widgets/my_text_field.dart';
 
-import '../service/hive_database.dart';
 import '../widgets/option_field.dart';
 import '../widgets/section_container.dart';
 
-class AddQuestion extends StatefulWidget {
-  const AddQuestion({super.key});
+class AddQuestionViaApi extends StatefulWidget {
+  const AddQuestionViaApi({super.key});
 
   @override
-  State<AddQuestion> createState() => _AddQuestionState();
+  State<AddQuestionViaApi> createState() => _AddQuestionViaApiState();
 }
 
-class _AddQuestionState extends State<AddQuestion> {
+class _AddQuestionViaApiState extends State<AddQuestionViaApi> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController questionTitleController = TextEditingController();
   final List<TextEditingController> optionControllers = List.generate(2, (_) => TextEditingController());
@@ -49,7 +51,6 @@ class _AddQuestionState extends State<AddQuestion> {
     }
 
     Map<String, dynamic> questionAsJson = {
-      "id": DateTime.now().millisecondsSinceEpoch,
       "question": questionTitleController.text.trim(),
       "options": optionControllers.map((e) => e.text.trim()).toList(),
       "answerIndex": currentAnswerIndex,
@@ -57,10 +58,15 @@ class _AddQuestionState extends State<AddQuestion> {
     };
 
     try {
-      await HiveDatabase.addQuestion(questionAsJson);
-      resetForm();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Question saved successfully!"), backgroundColor: Colors.green));
+      String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/1/questions";
+      var response = await http.post(Uri.parse(url), body: jsonEncode(questionAsJson));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        resetForm();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Question saved successfully!"), backgroundColor: Colors.green));
+      } else {
+        print("ERROR");
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error saving question: $e"), backgroundColor: Colors.red));
     }

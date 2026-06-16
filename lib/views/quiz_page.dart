@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:quiz_shell/data/biology_questions.dart';
 import 'package:quiz_shell/data/chemistry_questions.dart';
 import 'package:quiz_shell/data/computer_questions.dart';
@@ -13,10 +16,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../service/hive_database.dart';
 
 class QuizPage extends StatefulWidget {
-  const QuizPage({super.key, required this.category, this.loadFromLocalDatabase = false});
+  const QuizPage({super.key, required this.category, this.loadFromLocalDatabase = false, this.loadFromServer = false});
 
   final String category;
   final bool loadFromLocalDatabase;
+  final bool loadFromServer;
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -29,6 +33,7 @@ class _QuizPageState extends State<QuizPage> {
   int obtainedMark = 0;
   int progress = 0;
   List<QuizQuestion> questions = [];
+  bool isLoading = false;
 
   void setAnswer(int currentIndex) {
     if (selectedAnswerIndex == currentIndex) {
@@ -60,10 +65,22 @@ class _QuizPageState extends State<QuizPage> {
     setState(() {});
   }
 
-  void loadAllQuestionsOfThisCategory() {
+  Future<void> loadAllQuestionsOfThisCategory() async {
+    setState(() => isLoading = true);
     List<QuizQuestion> allQuestionsOfThisCategory = [];
     if (widget.loadFromLocalDatabase) {
       allQuestionsOfThisCategory = HiveDatabase.myQuestions.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e))).toList();
+    }
+    if (widget.loadFromServer) {
+      String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/1/questions";
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var rawTodoData = jsonDecode(response.body);
+        List data = rawTodoData["data"];
+        setState(() => allQuestionsOfThisCategory = data.map((item) => QuizQuestion.fromJson(item)).toList());
+      } else {
+        print("ERROR");
+      }
     } else {
       if (widget.category == "Math") allQuestionsOfThisCategory = mathQuestions;
       if (widget.category == "Chemistry") allQuestionsOfThisCategory = chemistryQuestions;
@@ -71,6 +88,7 @@ class _QuizPageState extends State<QuizPage> {
       if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
     }
     setState(() => questions = List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle());
+    setState(() => isLoading = false);
   }
 
   @override
@@ -97,7 +115,9 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ],
       ),
-      body: questions.isEmpty
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : questions.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

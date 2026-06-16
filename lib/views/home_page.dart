@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_shell/views/add_question.dart';
+import 'package:quiz_shell/views/add_question_via_api.dart';
 import 'package:quiz_shell/views/added_questions.dart';
+import 'package:quiz_shell/views/questions_from_api.dart';
 import 'package:quiz_shell/widgets/banner_card.dart';
 import 'package:quiz_shell/widgets/category_card.dart';
 import 'package:quiz_shell/widgets/home_page_header.dart';
@@ -51,7 +53,8 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   spacing: 12,
                   children: [
-                    CategoryCard(title: "Local", imageFileName: "computer.png", loadFromLocalDatabase: true),
+                    CategoryCard(title: "From Local", imageFileName: "computer.png", loadFromLocalDatabase: true),
+                    CategoryCard(title: "From Backend", imageFileName: "computer.png", loadFromServer: true),
                     CategoryCard(title: "Math", imageFileName: "math.png"),
                     CategoryCard(title: "Chemistry", imageFileName: "chemistry.png"),
                     CategoryCard(title: "Computer", imageFileName: "computer.png"),
@@ -89,6 +92,27 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               SizedBox(height: 16),
+              SizedBox(height: 16),
+              TitleSection(label: "Quiz from API Hub", showSeeAll: false),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AddQuestionViaApi())),
+                      child: Text("Add Question"),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuestionsFromApi())),
+                      child: Text("View Questions"),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 32),
             ],
           ),
         ),

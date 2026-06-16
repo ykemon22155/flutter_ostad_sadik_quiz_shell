@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../views/quiz_page.dart';
 
 class CategoryCard extends StatelessWidget {
-  const CategoryCard({super.key, required this.title, required this.imageFileName, this.loadFromLocalDatabase = false});
+  const CategoryCard({super.key, required this.title, required this.imageFileName, this.loadFromLocalDatabase = false, this.loadFromServer = false});
 
   final String title;
   final String imageFileName;
   final bool loadFromLocalDatabase;
+  final bool loadFromServer;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class CategoryCard extends StatelessWidget {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => QuizPage(category: title, loadFromLocalDatabase: loadFromLocalDatabase),
+            builder: (context) => QuizPage(category: title, loadFromLocalDatabase: loadFromLocalDatabase, loadFromServer: loadFromServer),
           ),
         ),
         borderRadius: BorderRadius.circular(12),
