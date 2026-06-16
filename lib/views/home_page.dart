@@ -43,13 +43,13 @@ class _HomePageState extends State<HomePage> {
               HomePageHeader(totalScore: totalScore),
               SizedBox(height: 16),
               BannerCard(),
-              SizedBox(height: 16),
+              SizedBox(height: 32),
               TitleSection(label: "Subject"),
               SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  spacing: 16,
+                  spacing: 12,
                   children: [
                     CategoryCard(title: "Local", imageFileName: "computer.png", loadFromLocalDatabase: true),
                     CategoryCard(title: "Math", imageFileName: "math.png"),
@@ -88,6 +88,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
+              SizedBox(height: 16),
             ],
           ),
         ),

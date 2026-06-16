@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_shell/service/hive_database.dart';
+import 'package:quiz_shell/utils/numeric_serial_to_abc.dart';
 import 'package:quiz_shell/widgets/my_text_field.dart';
 
-import '../widgets/title_section.dart';
+import '../widgets/option_field.dart';
+import '../widgets/section_container.dart';
 
 class AddQuestion extends StatefulWidget {
   const AddQuestion({super.key});
@@ -12,98 +14,180 @@ class AddQuestion extends StatefulWidget {
 }
 
 class _AddQuestionState extends State<AddQuestion> {
-  TextEditingController questionTitleController = TextEditingController();
-  TextEditingController optionAController = TextEditingController();
-  TextEditingController optionBController = TextEditingController();
-  TextEditingController optionCController = TextEditingController();
-  TextEditingController optionDController = TextEditingController();
-  TextEditingController markController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController questionTitleController = TextEditingController();
+  final List<TextEditingController> optionControllers = List.generate(2, (_) => TextEditingController());
+  final TextEditingController markController = TextEditingController(text: "10");
   int? currentAnswerIndex;
 
+  void addOption() {
+    if (optionControllers.length < 10) {
+      setState(() => optionControllers.add(TextEditingController()));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Maximum 10 options allowed")));
+    }
+  }
+
+  void removeOption(int index) {
+    if (optionControllers.length > 2) {
+      setState(() {
+        optionControllers.removeAt(index);
+        if (currentAnswerIndex == index) {
+          currentAnswerIndex = null;
+        } else if (currentAnswerIndex != null && currentAnswerIndex! > index) {
+          currentAnswerIndex = currentAnswerIndex! - 1;
+        }
+      });
+    }
+  }
+
   Future<void> addQuestion() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (currentAnswerIndex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select the correct answer by tapping the radio button next to it"),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     Map<String, dynamic> questionAsJson = {
       "id": DateTime.now().millisecondsSinceEpoch,
-      "question": questionTitleController.text,
-      "options": [optionAController.text, optionBController.text, optionCController.text, optionDController.text],
+      "question": questionTitleController.text.trim(),
+      "options": optionControllers.map((e) => e.text.trim()).toList(),
       "answerIndex": currentAnswerIndex,
-      "mark": int.parse(markController.text),
+      "mark": int.tryParse(markController.text) ?? 10,
     };
-    await HiveDatabase.addQuestion(questionAsJson);
-    resetForm();
-    showDialog(
-      // ignore: use_build_context_synchronously
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Success"),
-        content: const Text("Question saved successfully."),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
-      ),
-    );
+
+    try {
+      await HiveDatabase.addQuestion(questionAsJson);
+      resetForm();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Question saved successfully!"), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving question: $e"), backgroundColor: Colors.red),
+      );
+    }
   }
 
   void resetForm() {
+    _formKey.currentState?.reset();
     questionTitleController.clear();
-    optionAController.clear();
-    optionBController.clear();
-    optionCController.clear();
-    optionDController.clear();
-    markController.clear();
-    currentAnswerIndex = null;
-    setState(() {});
+    for (var controller in optionControllers) {
+      controller.dispose();
+    }
+    optionControllers.clear();
+    optionControllers.addAll(
+
+        List.generate(2, (_) => TextEditingController())
+        );
+    markController.text = "10";
+    setState(() => currentAnswerIndex = null);
+  }
+
+  @override
+  void dispose() {
+    questionTitleController.dispose();
+    for (var controller in optionControllers) {
+      controller.dispose();
+    }
+    markController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Add New Question")),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          // Question
-          MyTextField(controller: questionTitleController, label: "Question Title"),
-          Container(
-            padding: EdgeInsets.all(16) - EdgeInsets.only(bottom: 16) + EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(width: 1, color: Colors.black26),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                MyTextField(controller: optionAController, label: "Answer Option A"),
-                MyTextField(controller: optionBController, label: "Answer Option B"),
-                MyTextField(controller: optionCController, label: "Answer Option C"),
-                MyTextField(controller: optionDController, label: "Answer Option D"),
-              ],
-            ),
-          ),
-          SizedBox(height: 16),
-          TitleSection(label: "Correct Answer", showSeeAll: false),
-          RadioGroup<int?>(
-            groupValue: currentAnswerIndex,
-            onChanged: (value) => setState(() => currentAnswerIndex = value),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: RadioListTile<int?>(dense: true, value: 0, title: Text("A"))),
-                    Expanded(child: RadioListTile<int?>(dense: true, value: 1, title: Text("B"))),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(child: RadioListTile<int?>(dense: true, value: 2, title: Text("C"))),
-                    Expanded(child: RadioListTile<int?>(dense: true, value: 3, title: Text("D"))),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16),
-          MyTextField(controller: markController, label: "Total Mark", showNumberKeyboardOnly: true),
-          SizedBox(height: 16),
-          ElevatedButton(onPressed: addQuestion, child: Text("Submit")),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Add New Question"),
+        elevation: 0,
+        actions: [
+          IconButton(onPressed: resetForm, icon: const Icon(Icons.refresh), tooltip: "Reset Form"),
         ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            SectionContainer(
+              title: "The Question",
+              child: MyTextField(
+                controller: questionTitleController,
+                label: "Enter question title",
+                validator: (v) => (v == null || v.isEmpty) ? "Enter question" : null,
+              ),
+            ),
+
+            SectionContainer(
+              title: "Answer Options",
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 12,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: RadioGroup<int?>(
+                      groupValue: currentAnswerIndex,
+                      onChanged: (value) => setState(() => currentAnswerIndex = value),
+                      child: Column(
+                        spacing: 12,
+                        children: List.generate(optionControllers.length, (index) {
+                          return OptionField(
+                            controller: optionControllers[index],
+                            label: "Option ${numericSerialToAbc(index).toUpperCase()}",
+                            index: index,
+                            onRemove: optionControllers.length > 2 ? () => removeOption(index) : null,
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 42),
+                    child: OutlinedButton.icon(
+                      onPressed: addOption,
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add More Options"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SectionContainer(
+              title: "Misc.",
+              child: MyTextField(
+                controller: markController,
+                label: "Mark for this question",
+                showNumberKeyboardOnly: true,
+                validator: (v) => (v == null || v.isEmpty) ? "Enter mark" : null,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: addQuestion,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xff2200a5),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text("SUBMIT QUESTION", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
