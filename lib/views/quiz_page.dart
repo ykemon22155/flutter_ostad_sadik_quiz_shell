@@ -7,6 +7,7 @@ import 'package:quiz_shell/data/chemistry_questions.dart';
 import 'package:quiz_shell/data/computer_questions.dart';
 import 'package:quiz_shell/data/math_questions.dart';
 import 'package:quiz_shell/model/quiz_ques_model.dart';
+import 'package:quiz_shell/service/database_service.dart';
 import 'package:quiz_shell/utils/numeric_serial_to_abc.dart';
 import 'package:quiz_shell/widgets/answer_option.dart';
 import 'package:quiz_shell/widgets/question_card.dart';
@@ -14,6 +15,7 @@ import 'package:quiz_shell/widgets/quiz_progress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../service/hive_database.dart';
+import '../widgets/quiz_result.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key, required this.category, this.loadFromLocalDatabase = false, this.loadFromServer = false});
@@ -31,9 +33,11 @@ class _QuizPageState extends State<QuizPage> {
   bool answerCorrect = false;
   bool answerSubmitted = false;
   int obtainedMark = 0;
+  int totalCorrect = 0;
   int progress = 0;
   List<QuizQuestion> questions = [];
   bool isLoading = false;
+  bool isQuizOver = false;
 
   void setAnswer(int currentIndex) {
     if (selectedAnswerIndex == currentIndex) {
@@ -49,6 +53,7 @@ class _QuizPageState extends State<QuizPage> {
     answerCorrect = (selectedAnswerIndex == questions[progress].answerIndex);
     answerSubmitted = true;
     if (answerCorrect) {
+      totalCorrect++;
       obtainedMark = obtainedMark + questions[progress].mark;
       SharedPreferences pref = await SharedPreferences.getInstance();
       int currentTotalScore = pref.getInt('score') ?? 0;
@@ -57,12 +62,18 @@ class _QuizPageState extends State<QuizPage> {
     setState(() {});
   }
 
-  void prepareNextQuestion() {
-    answerCorrect = false;
-    answerSubmitted = false;
-    selectedAnswerIndex = null;
-    if (progress < questions.length) progress++;
-    setState(() {});
+  Future<void> prepareNextQuestion() async {
+    if (progress < questions.length - 1) {
+      progress++;
+      answerCorrect = false;
+      answerSubmitted = false;
+      selectedAnswerIndex = null;
+      setState(() {});
+    } else {
+      isQuizOver = true;
+      setState(() {});
+      await DatabaseService().saveQuizSession(gainedScore: obtainedMark, totalAttempt: questions.length, totalCorrect: totalCorrect, category: widget.category);
+    }
   }
 
   Future<void> loadAllQuestionsOfThisCategory() async {
@@ -87,7 +98,7 @@ class _QuizPageState extends State<QuizPage> {
       if (widget.category == "Biology") allQuestionsOfThisCategory = biologyQuestions;
       if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
     }
-    setState(() => questions = List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle());
+    setState(() => questions = (List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle()).take(5).toList());
     setState(() => isLoading = false);
   }
 
@@ -128,19 +139,8 @@ class _QuizPageState extends State<QuizPage> {
                 ],
               ),
             )
-          : progress == questions.length
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 24,
-                children: [
-                  Icon(Icons.emoji_events_outlined, size: 120, color: Colors.orange),
-                  Text("Quiz Completed!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text("Your Score: $obtainedMark", style: TextStyle(fontSize: 18)),
-                  ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("Back to Home")),
-                ],
-              ),
-            )
+          : isQuizOver
+          ? QuizResult(totalQuestions: questions.length, totalCorrect: totalCorrect, obtainedMark: obtainedMark)
           : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -169,18 +169,29 @@ class _QuizPageState extends State<QuizPage> {
                     ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton(
-                      onPressed: answerSubmitted ? prepareNextQuestion : submitAnswer,
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
-                        fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
-                        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
-                      ),
-                      child: Text(
-                        answerSubmitted ? "Next" : "Submit",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                    child: selectedAnswerIndex == null
+                        ? SizedBox()
+                        : answerSubmitted
+                        ? ElevatedButton(
+                            onPressed: prepareNextQuestion,
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
+                              fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                            ),
+                            child: Text(
+                              "Next",
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        : OutlinedButton(
+                            onPressed: submitAnswer,
+                            style: ButtonStyle(
+                              fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                            ),
+                            child: Text("Submit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
                   ),
                 ],
               ),

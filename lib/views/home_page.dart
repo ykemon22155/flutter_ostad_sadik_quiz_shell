@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:quiz_shell/service/database_service.dart';
 import 'package:quiz_shell/views/add_question.dart';
 import 'package:quiz_shell/views/add_question_via_api.dart';
 import 'package:quiz_shell/views/added_questions.dart';
@@ -42,7 +44,7 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
             padding: EdgeInsets.all(16),
             children: [
-              HomePageHeader(totalScore: totalScore),
+              HomePageHeader(),
               SizedBox(height: 16),
               BannerCard(),
               SizedBox(height: 32),
@@ -66,13 +68,28 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               TitleSection(label: "Recent", showSeeAll: false),
               SizedBox(height: 16),
-              RecentCard(title: "Biology", questionCount: 12, isComplete: true),
-              SizedBox(height: 16),
-              RecentCard(title: "English", questionCount: 96, isComplete: false),
-              SizedBox(height: 16),
-              RecentCard(title: "Computer", questionCount: 19, isComplete: true),
-              SizedBox(height: 32),
-              TitleSection(label: "Quiz from Local Storage", showSeeAll: false),
+              StreamBuilder<QuerySnapshot>(
+                stream: DatabaseService().sessionHistoryStream,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Text("No Quiz Played Yet");
+                  }
+                  return Column(
+                    children: snapshot.data!.docs.map((doc) {
+                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: RecentCard(
+                          title: data['quizCategory'] ?? '--',
+                          totalAttempt: data['totalAttempt'] ?? '--',
+                          totalCorrect: data['totalCorrect'] ?? '--',
+                          gainedScore: data['gainedScore'] ?? '--',
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
               SizedBox(height: 16),
               Row(
                 children: [
