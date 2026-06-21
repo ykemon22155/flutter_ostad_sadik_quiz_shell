@@ -1,0 +1,60 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quiz_shell/service/auth_service.dart';
+import 'package:quiz_shell/service/user_data.dart';
+
+class DatabaseService {
+  final FirebaseFirestore database = FirebaseFirestore.instance;
+  final String? uid = AuthService().currentUser?.uid;
+
+  String userDatabaseLabel = "users";
+  String quizSessionDatabaseLabel = "sessions";
+
+  //Get User's Total Score
+  Stream<int> get totalScoreStream {
+    if (uid == null) return Stream.value(0);
+    return database.collection(userDatabaseLabel).doc(uid).snapshots().map((doc) {
+      if (doc.exists) {
+        return (doc.data() as Map<String, dynamic>)['totalScore'] ?? 0;
+      } else {
+        return 0;
+      }
+    });
+  }
+
+  //Save Quiz Session
+  Future<void> saveQuizSession({required int gainedScore, required int totalAttempt, required int totalCorrect, required String category}) async {
+    if (uid == null) return;
+    final userRef = database.collection(userDatabaseLabel).doc(uid);
+    final sessionRef = userRef.collection(quizSessionDatabaseLabel).doc();
+    await database.runTransaction((transaction) async {
+      // 1. Get current total score
+      DocumentSnapshot userDoc = await transaction.get(userRef);
+      int existingCurrentScore = 0;
+      int newCurrentScore = 0;
+      if (userDoc.exists) existingCurrentScore = (userDoc.data() as Map<String, dynamic>)['totalScore'] ?? 0;
+      newCurrentScore = existingCurrentScore + gainedScore;
+      // 2. Update user's total score
+      transaction.set(userRef, {
+        'totalScore': newCurrentScore,
+        'displayName': UserData.userName,
+        'email': UserData.userEmail,
+        'photo': UserData.userImageUrl,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+      // 3. Append session data
+      transaction.set(sessionRef, {
+        'quizCategory': category,
+        'dateTime': FieldValue.serverTimestamp(),
+        'totalAttempt': totalAttempt,
+        'totalCorrect': totalCorrect,
+        'gainedScore': gainedScore,
+      });
+    });
+  }
+
+  //Get user's session history
+  Stream<QuerySnapshot> get sessionHistoryStream {
+    if (uid == null) return Stream.empty();
+    return database.collection(userDatabaseLabel).doc(uid).collection(quizSessionDatabaseLabel).orderBy('dateTime', descending: true).snapshots();
+  }
+}

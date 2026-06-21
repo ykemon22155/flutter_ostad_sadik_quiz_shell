@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class RecentCard extends StatelessWidget {
-  const RecentCard({super.key, required this.title, required this.questionCount, required this.isComplete});
+  const RecentCard({super.key, required this.title, required this.gainedScore, required this.totalCorrect, required this.totalAttempt});
 
   final String title;
-  final int questionCount;
-  final bool isComplete;
+  final int gainedScore;
+  final int totalCorrect;
+  final int totalAttempt;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,7 @@ class RecentCard extends StatelessWidget {
       tileColor: Color(0xfff5f3fb),
       shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12)),
       title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text("$questionCount Questions"),
+      subtitle: Text("Score: $gainedScore"),
       leading: Container(
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(color: Color(0xffe8e5f6), borderRadius: BorderRadius.circular(6)),
@@ -21,8 +22,8 @@ class RecentCard extends StatelessWidget {
       ),
       trailing: Container(
         padding: EdgeInsets.all(6),
-        decoration: BoxDecoration(color: isComplete ? Color(0xffd9ebe0) : Color(0xfff3e4de), borderRadius: BorderRadius.circular(6)),
-        child: Text(isComplete ? "Completed" : "Incomplete", style: TextStyle(color: isComplete ? Colors.green.shade800 : Colors.orangeAccent.shade700)),
+        decoration: BoxDecoration(color: Color(0xffd9ebe0), borderRadius: BorderRadius.circular(6)),
+        child: Text("$totalCorrect / $totalAttempt", style: TextStyle(color: Colors.green.shade800, fontSize: 14),),
       ),
     );
   }
