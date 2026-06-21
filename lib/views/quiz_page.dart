@@ -62,6 +62,7 @@ class _QuizPageState extends State<QuizPage> {
     answerSubmitted = false;
     selectedAnswerIndex = null;
     if (progress < questions.length) progress++;
+    //todo: Quiz Over
     setState(() {});
   }
 
@@ -119,72 +120,60 @@ class _QuizPageState extends State<QuizPage> {
           ? Center(child: CircularProgressIndicator())
           : questions.isEmpty
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 12,
-                children: [
-                  Icon(Icons.warning_amber_outlined, size: 110, color: Colors.redAccent),
-                  Text("${widget.category} Quiz is not available right now!"),
-                ],
-              ),
-            )
-          : progress == questions.length
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 24,
-                children: [
-                  Icon(Icons.emoji_events_outlined, size: 120, color: Colors.orange),
-                  Text("Quiz Completed!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  Text("Your Score: $obtainedMark", style: TextStyle(fontSize: 18)),
-                  ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("Back to Home")),
-                ],
-              ),
-            )
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 12,
+          children: [
+            Icon(Icons.warning_amber_outlined, size: 110, color: Colors.redAccent),
+            Text("${widget.category} Quiz is not available right now!"),
+          ],
+        ),
+      )
+      //todo: Quiz Over
           : Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                spacing: 32,
-                children: [
-                  QuizProgress(currentProgress: progress + 1, totalCount: questions.length),
-                  QuestionCard(question: questions[progress].question),
-                  Column(
-                    spacing: 16,
-                    children: List.generate(
-                      questions[progress].options.length,
-                      (currentIndex) => AnswerOption(
-                        option: questions[progress].options[currentIndex],
-                        serial: numericSerialToAbc(currentIndex),
-                        isSelected: selectedAnswerIndex == currentIndex,
-                        onTap: answerSubmitted ? null : () => setAnswer(currentIndex),
-                        showCorrectAnswer: questions[progress].answerIndex == currentIndex && answerSubmitted,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: SizedBox()),
-                  if (answerSubmitted)
-                    Text(
-                      selectedAnswerIndex == questions[progress].answerIndex ? "Correct Answer" : "Incorrect Answer",
-                      style: TextStyle(color: selectedAnswerIndex == questions[progress].answerIndex ? Colors.green.shade800 : Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton(
-                      onPressed: answerSubmitted ? prepareNextQuestion : submitAnswer,
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
-                        fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
-                        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
-                      ),
-                      child: Text(
-                        answerSubmitted ? "Next" : "Submit",
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          spacing: 32,
+          children: [
+            QuizProgress(currentProgress: progress + 1, totalCount: questions.length),
+            QuestionCard(question: questions[progress].question),
+            Column(
+              spacing: 16,
+              children: List.generate(
+                questions[progress].options.length,
+                    (currentIndex) => AnswerOption(
+                  option: questions[progress].options[currentIndex],
+                  serial: numericSerialToAbc(currentIndex),
+                  isSelected: selectedAnswerIndex == currentIndex,
+                  onTap: answerSubmitted ? null : () => setAnswer(currentIndex),
+                  showCorrectAnswer: questions[progress].answerIndex == currentIndex && answerSubmitted,
+                ),
               ),
             ),
+            Expanded(child: SizedBox()),
+            if (answerSubmitted)
+              Text(
+                selectedAnswerIndex == questions[progress].answerIndex ? "Correct Answer" : "Incorrect Answer",
+                style: TextStyle(color: selectedAnswerIndex == questions[progress].answerIndex ? Colors.green.shade800 : Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ElevatedButton(
+                onPressed: answerSubmitted ? prepareNextQuestion : submitAnswer,
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
+                  fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                ),
+                child: Text(
+                  answerSubmitted ? "Next" : "Submit",
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
