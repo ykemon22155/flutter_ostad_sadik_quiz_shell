@@ -26,11 +26,11 @@ class _QuestionsFromApiState extends State<QuestionsFromApi> {
     String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/1/questions";
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-      var rawTodoData = jsonDecode(response.body);
-      List data = rawTodoData["data"];
+      var result = jsonDecode(response.body);
+      List data = result["data"];
       setState(() => allQuestions = data.map((item) => QuizQuestion.fromJson(item)).toList());
     } else {
-      print("ERROR");
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to load questions")));
     }
   }
 

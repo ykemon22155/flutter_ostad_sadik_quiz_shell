@@ -2,27 +2,22 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:quiz_shell/data/biology_questions.dart';
-import 'package:quiz_shell/data/chemistry_questions.dart';
-import 'package:quiz_shell/data/computer_questions.dart';
-import 'package:quiz_shell/data/math_questions.dart';
 import 'package:quiz_shell/model/quiz_ques_model.dart';
 import 'package:quiz_shell/service/database_service.dart';
 import 'package:quiz_shell/utils/numeric_serial_to_abc.dart';
 import 'package:quiz_shell/widgets/answer_option.dart';
 import 'package:quiz_shell/widgets/question_card.dart';
+import 'package:quiz_shell/widgets/quiz_not_available.dart';
 import 'package:quiz_shell/widgets/quiz_progress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../service/hive_database.dart';
+import '../model/quiz_category_model.dart';
 import '../widgets/quiz_result.dart';
 
 class QuizPage extends StatefulWidget {
-  const QuizPage({super.key, required this.category, this.loadFromLocalDatabase = false, this.loadFromServer = false});
+  const QuizPage({super.key, required this.category});
 
-  final String category;
-  final bool loadFromLocalDatabase;
-  final bool loadFromServer;
+  final QuizCategory category;
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -72,31 +67,47 @@ class _QuizPageState extends State<QuizPage> {
     } else {
       isQuizOver = true;
       setState(() {});
-      await DatabaseService().saveQuizSession(gainedScore: obtainedMark, totalAttempt: questions.length, totalCorrect: totalCorrect, category: widget.category);
+      await DatabaseService().saveQuizSession(gainedScore: obtainedMark, totalAttempt: questions.length, totalCorrect: totalCorrect, category: widget.category.name);
     }
   }
+
+  // Future<void> loadAllQuestionsOfThisCategory() async {
+  //   setState(() => isLoading = true);
+  //   List<QuizQuestion> allQuestionsOfThisCategory = [];
+  //   if (widget.loadFromLocalDatabase) {
+  //     allQuestionsOfThisCategory = HiveDatabase.myQuestions.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e))).toList();
+  //   }
+  //   if (widget.loadFromServer) {
+  //     String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/1/questions";
+  //     var response = await http.get(Uri.parse(url));
+  //     if (response.statusCode == 200) {
+  //       var result = jsonDecode(response.body);
+  //       List data = result["data"];
+  //       setState(() => allQuestionsOfThisCategory = data.map((item) => QuizQuestion.fromJson(item)).toList());
+  //     } else {
+  //       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to load questions from server")));
+  //     }
+  //   } else {
+  //     if (widget.category == "Math") allQuestionsOfThisCategory = mathQuestions;
+  //     if (widget.category == "Chemistry") allQuestionsOfThisCategory = chemistryQuestions;
+  //     if (widget.category == "Biology") allQuestionsOfThisCategory = biologyQuestions;
+  //     if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
+  //   }
+  //   setState(() => questions = (List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle()).take(5).toList());
+  //   setState(() => isLoading = false);
+  // }
 
   Future<void> loadAllQuestionsOfThisCategory() async {
     setState(() => isLoading = true);
     List<QuizQuestion> allQuestionsOfThisCategory = [];
-    if (widget.loadFromLocalDatabase) {
-      allQuestionsOfThisCategory = HiveDatabase.myQuestions.map((e) => QuizQuestion.fromJson(Map<String, dynamic>.from(e))).toList();
-    }
-    if (widget.loadFromServer) {
-      String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/1/questions";
-      var response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        var rawTodoData = jsonDecode(response.body);
-        List data = rawTodoData["data"];
-        setState(() => allQuestionsOfThisCategory = data.map((item) => QuizQuestion.fromJson(item)).toList());
-      } else {
-        print("ERROR");
-      }
+    String url = "https://sadiks-quiz-apihub.lovable.app/api/v1/categories/${widget.category.id}/questions";
+    var response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      var result = jsonDecode(response.body);
+      List data = result["data"];
+      setState(() => allQuestionsOfThisCategory = data.map((item) => QuizQuestion.fromJson(item)).toList());
     } else {
-      if (widget.category == "Math") allQuestionsOfThisCategory = mathQuestions;
-      if (widget.category == "Chemistry") allQuestionsOfThisCategory = chemistryQuestions;
-      if (widget.category == "Biology") allQuestionsOfThisCategory = biologyQuestions;
-      if (widget.category == "Computer") allQuestionsOfThisCategory = computerQuestions;
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to load questions from server")));
     }
     setState(() => questions = (List<QuizQuestion>.from(allQuestionsOfThisCategory)..shuffle()).take(5).toList());
     setState(() => isLoading = false);
@@ -113,7 +124,7 @@ class _QuizPageState extends State<QuizPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("${widget.category} Quiz"),
+        title: Text("${widget.category.name} Quiz"),
         actions: [
           Container(
             margin: EdgeInsets.only(right: 16),
@@ -129,16 +140,7 @@ class _QuizPageState extends State<QuizPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : questions.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 12,
-                children: [
-                  Icon(Icons.warning_amber_outlined, size: 110, color: Colors.redAccent),
-                  Text("${widget.category} Quiz is not available right now!"),
-                ],
-              ),
-            )
+          ? QuizNotAvailable(categoryName: widget.category.name)
           : isQuizOver
           ? QuizResult(totalQuestions: questions.length, totalCorrect: totalCorrect, obtainedMark: obtainedMark)
           : Padding(
@@ -149,7 +151,7 @@ class _QuizPageState extends State<QuizPage> {
                   QuizProgress(currentProgress: progress + 1, totalCount: questions.length),
                   QuestionCard(question: questions[progress].question),
                   Column(
-                    spacing: 16,
+                    spacing: 12,
                     children: List.generate(
                       questions[progress].options.length,
                       (currentIndex) => AnswerOption(
@@ -162,36 +164,40 @@ class _QuizPageState extends State<QuizPage> {
                     ),
                   ),
                   Expanded(child: SizedBox()),
-                  if (answerSubmitted)
-                    Text(
-                      selectedAnswerIndex == questions[progress].answerIndex ? "Correct Answer" : "Incorrect Answer",
-                      style: TextStyle(color: selectedAnswerIndex == questions[progress].answerIndex ? Colors.green.shade800 : Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: selectedAnswerIndex == null
-                        ? SizedBox()
-                        : answerSubmitted
-                        ? ElevatedButton(
-                            onPressed: prepareNextQuestion,
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
-                              fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
-                              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
-                            ),
-                            child: Text(
-                              "Next",
-                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        : OutlinedButton(
-                            onPressed: submitAnswer,
-                            style: ButtonStyle(
-                              fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
-                              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
-                            ),
-                            child: Text("Submit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
+                  Column(
+                    spacing: 16,
+                    children: [
+                      if (answerSubmitted)
+                        Text(
+                          selectedAnswerIndex == questions[progress].answerIndex ? "Correct Answer" : "Incorrect Answer",
+                          style: TextStyle(color: selectedAnswerIndex == questions[progress].answerIndex ? Colors.green.shade800 : Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                      SafeArea(
+                        child: selectedAnswerIndex == null
+                            ? SizedBox()
+                            : answerSubmitted
+                            ? ElevatedButton(
+                                onPressed: prepareNextQuestion,
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStatePropertyAll(Color(0xff2200a6)),
+                                  fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                                ),
+                                child: Text(
+                                  "Next",
+                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              )
+                            : OutlinedButton(
+                                onPressed: submitAnswer,
+                                style: ButtonStyle(
+                                  fixedSize: WidgetStatePropertyAll(Size(double.maxFinite, 56)),
+                                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(12))),
+                                ),
+                                child: Text("Submit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              ),
+                      ),
+                    ],
                   ),
                 ],
               ),
