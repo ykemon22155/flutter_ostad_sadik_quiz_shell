@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../model/quiz_category_model.dart';
 import '../views/quiz_page.dart';
 
 class CategoryCard extends StatelessWidget {
-  const CategoryCard({super.key, required this.title, required this.imageFileName, this.loadFromLocalDatabase = false, this.loadFromServer = false});
+  const CategoryCard({super.key, required this.category});
 
-  final String title;
-  final String imageFileName;
-  final bool loadFromLocalDatabase;
-  final bool loadFromServer;
+  final QuizCategory category;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => QuizPage(category: title, loadFromLocalDatabase: loadFromLocalDatabase, loadFromServer: loadFromServer),
-          ),
-        ),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => QuizPage(category: category))),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           decoration: BoxDecoration(color: Color(0xfffeeafe), borderRadius: BorderRadius.circular(12)),
@@ -28,13 +21,20 @@ class CategoryCard extends StatelessWidget {
           height: 120,
           child: Stack(
             children: [
-              Align(alignment: Alignment.bottomRight, child: Image.asset("asset/category/$imageFileName", height: 84)),
+              Positioned(
+                bottom: -62,
+                right: -16,
+                child: Text(
+                  category.name[0],
+                  style: TextStyle(fontSize: 136, fontWeight: FontWeight.w100, color: Color(0xff230a94).withValues(alpha: .2)),
+                ),
+              ),
               Align(
                 alignment: Alignment.topLeft,
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: Text(
-                    title,
+                    category.name,
                     style: TextStyle(color: Color(0xff230a94), fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ),
